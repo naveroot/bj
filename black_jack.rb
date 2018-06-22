@@ -27,7 +27,7 @@ class BlackJack
   def player_choice(params)
     game_menu params
     action_menu params
-    case prompt
+    case prompt.to_i
     when 1
       :open_cards
     when 2
@@ -90,7 +90,7 @@ class BlackJack
     puts "Do you want to continue?"
     puts "1: Yes"
     puts "2: No"
-    prompt == 1
+    prompt.to_i == 1
   end
 end
 
