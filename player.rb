@@ -13,7 +13,7 @@ class Player
   end
 
   def drop_hand
-    @hand = []
+    @cards = []
   end
 
 end
