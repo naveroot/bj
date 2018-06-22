@@ -1,7 +1,7 @@
 require_relative 'game'
 class BlackJack
   def start
-    puts 'Please, enter your name'
+    puts 'Please, enter your name:'
     @username = gets.chomp
     @game = Game.new username: @username
     loop do
@@ -21,7 +21,7 @@ class BlackJack
       end
     end
   end
-  
+
   private
 
   def player_choice(params)
@@ -45,35 +45,38 @@ class BlackJack
   end
 
   def game_menu(params)
+    puts '==============================================='
     puts "#{@username}"
     puts "Cards: #{params[:player_cards]}"
     puts "Value: #{params[:player_value]}"
     puts "Cash: #{params[:player_cash]}"
+    puts '==============================================='
     puts "Dealer"
     puts "Cards: #{params[:dealer_cards] ? params[:dealer_cards] : '??'}"
     puts "Value: #{params[:dealer_value] ? params[:dealer_value] : '??'}"
     puts "Cash: #{params[:dealer_cash] ? params[:dealer_cash] : '??'}"
+    puts '==============================================='
     puts "Bank: #{params[:bank]}"
   end
 
   def winner(params)
     game_menu(params)
-    puts '========================'
+    puts '==============================================='
     puts "The winner is #{params[:winner]}"
-    puts '========================'
+    puts '==============================================='
   end
 
   def game_over(params)
-    puts '========================'
+    puts '==============================================='
     puts "Game over! #{params[:loser]} spend all his money!"
-    puts '========================'
+    puts '==============================================='
   end
 
   def draw(params)
     game_menu(params)
-    puts '========================'
+    puts '==============================================='
     puts "Draw"
-    puts '========================'
+    puts '==============================================='
   end
 
   def action_menu(params)
