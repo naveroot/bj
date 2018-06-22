@@ -35,8 +35,11 @@ class BlackJack
     when 3
       :add_one_card
     else
-      raise 'wrong_params'
+      raise 'wrong_choice'
     end
+  rescue RuntimeError => error
+    puts error.message
+    retry
   end
 
   def prompt

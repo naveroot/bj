@@ -57,7 +57,10 @@ class Game
   end
 
   def add_one_card
+    raise 'You have 3 cads. Y cant take more' if @player.cards.size > 2
     @player.cards.concat @deck.pop(1)
+    @status = { action: :player_turn, params: { bank: @bank } }
+    @status[:params].merge! player_info
   end
 
   def new_round
