@@ -134,7 +134,7 @@ class Game
   def status_builder(action, *_params)
     @status = { params: {} }
     @status[:action] = action
-    p @status[:params]
+    @status[:params]
     _params.each { |param| @status[:params].merge! param }
   end
 end
