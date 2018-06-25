@@ -3,13 +3,69 @@ require_relative 'player'
 require_relative 'dealer'
 class Game
   include Deck
-  attr_reader :player, :dealer, :status
+  attr_reader :player, :status
 
   def initialize(username: 'Player')
     @dealer = Dealer.new
     @player = Player.new name: username
+    @status = {}
+    @status[:action] = :start_game
     new_round
   end
+
+  def open_cards
+    if draw?
+      draw
+    elsif value(@player.cards) > value(@dealer.cards)
+      select_winner @player
+    else
+      select_winner @dealer
+    end
+    overflow_validation
+    game_over_validation
+  end
+
+  def pass
+    @dealer.cards.concat @deck.pop(1) if value(@dealer.cards) < 17 && @dealer.cards.size < 3
+    overflow_validation
+    game_over_validation
+  end
+
+  def add_one_card
+    raise 'You have 3 cads. Y cant take more' if @player.cards.size > 2
+    @player.cards.concat @deck.pop(1)
+    @status = { action: :player_turn, params: { bank: @bank } }
+    @status[:params].merge! player_info
+    overflow_validation
+    game_over_validation
+  end
+
+  def new_round
+    raise 'end round before start new' unless %i[winner draw game_over start_game].include? @status[:action]
+    @deck = Deck.generate
+    @bank = 0
+    @bank += @player.bet 10
+    @bank += @dealer.bet 10
+    @player.drop_hand
+    @dealer.drop_hand
+    @player.cards.concat @deck.pop(2)
+    @dealer.cards.concat @deck.pop(2)
+    @status = { action: :player_turn, params: { bank: @bank } }
+    @status[:params].merge! player_info
+    overflow_validation
+    game_over_validation
+  end
+
+  def new_game
+    raise 'end round before start new' unless %i[winner draw game_over start_game].include? @status[:action]
+    @dealer.cash = 100
+    @player.cash = 100
+    new_round
+    overflow_validation
+    game_over_validation
+  end
+
+  private
 
   def player_info
     { player_cards: @player.cards,
@@ -21,65 +77,6 @@ class Game
     { dealer_cards: @dealer.cards,
       dealer_value: value(@dealer.cards),
       dealer_cash: @dealer.cash }
-  end
-
-  def command(command)
-    case command
-    when :open_cards
-      open_cards
-    when :pass
-      pass
-    when :add_one_card
-      add_one_card
-    when :new_round
-      new_round
-    when :new_game
-      new_game
-    end
-    overflow_validation
-    game_over_validation
-  end
-
-  private
-
-  def open_cards
-    if draw?
-      draw
-    elsif value(@player.cards) > value(@dealer.cards)
-      select_winner @player
-    else
-      select_winner @dealer
-    end
-  end
-
-  def pass
-    @dealer.cards.concat @deck.pop(1) if value(@dealer.cards) < 17 && @dealer.cards.size < 3
-  end
-
-  def add_one_card
-    raise 'You have 3 cads. Y cant take more' if @player.cards.size > 2
-    @player.cards.concat @deck.pop(1)
-    @status = { action: :player_turn, params: { bank: @bank } }
-    @status[:params].merge! player_info
-  end
-
-  def new_round
-    @deck = Deck.generate
-    @bank = 0
-    @bank += @player.bet 10
-    @bank += @dealer.bet 10
-    @player.drop_hand
-    @dealer.drop_hand
-    @player.cards.concat @deck.pop(2)
-    @dealer.cards.concat @deck.pop(2)
-    @status = { action: :player_turn, params: { bank: @bank } }
-    @status[:params].merge! player_info
-  end
-
-  def new_game
-    @dealer.cash = 100
-    @player.cash = 100
-    new_round
   end
 
   def select_winner(player)

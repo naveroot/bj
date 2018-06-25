@@ -8,16 +8,16 @@ class BlackJack
       status = @game.status
       case status[:action]
       when :player_turn
-        @game.command player_choice(status[:params])
+        player_choice(status[:params])
       when :winner
         winner status[:params]
-        continue? ? @game.command(:new_round) : break
+        continue? ? @game.new_round : break
       when :draw
         draw status[:params]
-        continue? ? @game.command(:new_round) : break
+        continue? ? @game.new_round : break
       when :game_over
         game_over status[:params]
-        continue? ? @game.command(:new_game) : break
+        continue? ? @game.new_game : break
       end
     end
   end
@@ -29,11 +29,11 @@ class BlackJack
     action_menu params
     case prompt.to_i
     when 1
-      :open_cards
+      @game.open_cards
     when 2
-      :pass
+      @game.pass
     when 3
-      :add_one_card
+      @game.add_one_card
     else
       raise 'wrong_choice'
     end
