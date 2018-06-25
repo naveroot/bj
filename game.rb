@@ -8,8 +8,7 @@ class Game
   def initialize(username: 'Player')
     @dealer = Dealer.new
     @player = Player.new name: username
-    @status = {}
-    @status[:action] = :start_game
+    @status = { action: :start_game, params: {} }
     new_round
   end
 
@@ -27,6 +26,7 @@ class Game
 
   def pass
     @dealer.cards.concat @deck.pop(1) if value(@dealer.cards) < 17 && @dealer.cards.size < 3
+    status_builder :player_turn, player_info, bank
     overflow_validation
     game_over_validation
   end
@@ -34,8 +34,7 @@ class Game
   def add_one_card
     raise 'You have 3 cads. Y cant take more' if @player.cards.size > 2
     @player.cards.concat @deck.pop(1)
-    @status = { action: :player_turn, params: { bank: @bank } }
-    @status[:params].merge! player_info
+    status_builder :player_turn, player_info, bank
     overflow_validation
     game_over_validation
   end
@@ -50,8 +49,7 @@ class Game
     @dealer.drop_hand
     @player.cards.concat @deck.pop(2)
     @dealer.cards.concat @deck.pop(2)
-    @status = { action: :player_turn, params: { bank: @bank } }
-    @status[:params].merge! player_info
+    status_builder :player_turn, player_info, bank
     overflow_validation
     game_over_validation
   end
@@ -79,19 +77,21 @@ class Game
       dealer_cash: @dealer.cash }
   end
 
+  def bank
+    { bank: @bank }
+  end
+
   def select_winner(player)
     player.cash += @bank
     @bank = 0
-    @status[:action] = :winner
-    @status[:params].merge!(dealer_info).merge! winner: player.name
+    status_builder :winner, player_info, dealer_info, bank, winner: player.name
   end
 
   def draw
     @player.cash += 10
     @dealer.cash += 10
     @bank = 0
-    @status[:action] = :draw
-    @status[:params].merge!(dealer_info)
+    status_builder :draw, player_info, dealer_info
   end
 
   def value(cards)
@@ -124,11 +124,17 @@ class Game
 
   def game_over_validation
     if @player.cash.zero?
-      @status[:action] = :game_over
-      @status[:params].merge!(dealer_info).merge! loser: @player.name
+      status_builder :game_over, player_info, dealer_info, loser: @player
     elsif @dealer.cash.zero?
       @status[:action] = :game_over
-      @status[:params].merge!(dealer_info).merge! loser: @dealer.name
+      status_builder :game_over, player_info, dealer_info, loser: @dealer
     end
+  end
+
+  def status_builder(action, *_params)
+    @status = { params: {} }
+    @status[:action] = action
+    p @status[:params]
+    _params.each { |param| @status[:params].merge! param }
   end
 end
